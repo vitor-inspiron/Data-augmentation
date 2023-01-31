@@ -1,0 +1,30 @@
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from skimage.util import random_noise
+
+#load image
+img = cv2.imread("image path")
+
+# adiciona ruído
+tnoise_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+noise_img1 = random_noise(tnoise_img, mode = 's&p', amount=0.01)
+noise_img5 = random_noise(tnoise_img, mode = 's&p', amount=0.05)
+noise_img10 = random_noise(tnoise_img, mode = 's&p', amount=0.10)
+noise_img1 = np.array(255*noise_img1, dtype = 'uint8')
+noise_img5 = np.array(255*noise_img5, dtype = 'uint8')
+noise_img10 = np.array(255*noise_img10, dtype = 'uint8')
+
+#display
+
+imgplot = plt.imshow(tnoise_img)
+plt.show()
+
+imgplot1 = plt.imshow(noise_img1)
+plt.show()
+
+imgplot5 = plt.imshow(noise_img5)
+plt.show()
+
+imgplot10 = plt.imshow(noise_img10)
+plt.show()
