@@ -1,0 +1,106 @@
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from skimage.util import random_noise
+from pathlib import Path
+import random
+import os
+import cv2
+import matplotlib.pyplot as plt
+from google.colab import drive
+drive.mount('/content/drive')
+
+fileimagens= []
+images = []
+images_path =  ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_2022-12-19')
+augmented_path_ruido01 = ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_ruido01')
+augmented_path_ruido05 = ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_ruido05')
+augmented_path_ruido10 = ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_ruido10')
+augmented_path_blur02  = ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_blur02')
+augmented_path_blur03  = ('/content/drive/MyDrive/Minha_CNN/data/data_8partes_blur03')
+data = '/content/drive/MyDrive/Minha_CNN/data/data_8partes_2022-12-19/dataset_ruido.csv'
+
+for im in os.listdir(images_path):
+    images.append(os.path.join(images_path, im))
+    fileimagens.append(Path(im).stem)
+
+df = pd.read_csv(data, delimiter =';')
+
+img_original  = images_path + '/'+ df.iloc[ 1, 0]
+print(img_original)
+img_original  = images_path + '/'+ df.iloc[ 2, 0]
+print(img_original)
+
+#load image
+ind = 0
+print(fileimagens[0])
+len_df = len(df.index)
+
+#for i in images:
+for i in range(len_df):
+  img_original  = images_path + '/'+ df.iloc[ i, 0]
+  file_name, ext =  df.iloc[ i, 0].split(".")
+  #separar nome e extensão do arquivo
+  #file_name, ext = img_original.split(".")
+  #print(i)
+  #print(file_name)
+  #print(ext)
+  img = cv2.imread(img_original)
+  # adiciona ruído s&p
+  tnoise_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+  noise_img01 = random_noise(tnoise_img, mode = 's&p', amount=0.01)
+  noise_img05 = random_noise(tnoise_img, mode = 's&p', amount=0.05)
+  noise_img10 = random_noise(tnoise_img, mode = 's&p', amount=0.10)
+  noise_img01 = np.array(255*noise_img01, dtype = 'uint8')
+  noise_img05 = np.array(255*noise_img05, dtype = 'uint8')
+  noise_img10 = np.array(255*noise_img10, dtype = 'uint8')
+
+  blur_img02 = cv2.blur(tnoise_img, (2,2))
+  blur_img03 = cv2.blur(tnoise_img, (3,3))
+
+  # mostrando as imagens
+  imgplot = plt.imshow(tnoise_img)
+  plt.show()
+  imgplot01 = plt.imshow(noise_img01)
+  plt.show()
+  imgplot05 = plt.imshow(noise_img05)
+  plt.show()
+  imgplot10 = plt.imshow(noise_img10)
+  plt.show()
+  imgpltblur02 = plt.imshow(blur_img02)
+  plt.show()
+  imgpltblur03 = plt.imshow(blur_img03)
+  plt.show()
+
+  # ajustando o nome do arquivo
+  file_noise01 = augmented_path_ruido01 + '/'+  file_name + '_ruido01' + '.png'
+  file_noise05 = augmented_path_ruido05 + '/'+  file_name + '_ruido05' + '.png'
+  file_noise10 = augmented_path_ruido10 + '/'+  file_name + '_ruido10' + '.png'
+
+  file_blur02 = augmented_path_blur02 + '/'+  file_name + '_blur02' + '.png'
+  file_blur03 = augmented_path_blur03 + '/'+  file_name + '_blur03' + '.png'
+
+  
+  #os.chdir('/content/drive/MyDrive/Minha_CNN/data/data_8partes_ruido01')
+  # salvando as imagens na pasta
+  cv2.imwrite(file_noise01, noise_img01 )
+  cv2.imwrite(file_noise05, noise_img05 )
+  cv2.imwrite(file_noise10, noise_img10 )
+  cv2.imwrite(file_blur02, blur_img02 )
+  cv2.imwrite(file_blur03, blur_img03 )
+   
+  #nova linha no dataset
+  #inserir novo nome da imagem dataframe, por exemplo: Concha_inferior08_Parte06__ruido01.png
+  new_row = [file_name + '_ruido01' + '.png', df.iloc[ i, 1]]
+  df.loc[len(df.index)+1] = new_row
+  new_row = [file_name + '_ruido05' + '.png', df.iloc[ i, 1]]
+  df.loc[len(df.index)+1] = new_row
+  new_row = [file_name + '_ruido10' + '.png', df.iloc[ i, 1]]
+  df.loc[len(df.index)+1] = new_row
+  new_row = [file_name + 'blur02' + '.png', df.iloc[ i, 1]]
+  df.loc[len(df.index)+1] = new_row
+  new_row = [file_name + 'blur03' + '.png', df.iloc[ i, 1]]
+  df.loc[len(df.index)+1] = new_row
+
+df.to_csv("/content/drive/MyDrive/Minha_CNN/data/data_8partes_2022-12-19/dataset_ruido2.csv", index=False, sep=";")
